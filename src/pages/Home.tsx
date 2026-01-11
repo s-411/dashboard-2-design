@@ -2,30 +2,47 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2 } from 'lucide-react';
 import { useCreators } from '../hooks/useCreators';
+import { useFolderContext } from '../hooks/useFolderContext';
 import CreatorCard from '../components/CreatorCard';
 
 type FilterType = 'todo' | 'all';
 
 export default function Home() {
-  const { creators, loading, updateEngagement } = useCreators();
+  const { creators, loading, updateEngagement, updateCreatorFolder } = useCreators();
+  const { selectedFolderId, folders } = useFolderContext();
   const [filter, setFilter] = useState<FilterType>('todo');
 
-  const filteredCreators = creators.filter((creator) => {
+  // First filter by folder
+  const folderFilteredCreators = selectedFolderId
+    ? creators.filter((creator) => creator.folder_id === selectedFolderId)
+    : creators;
+
+  // Then filter by todo/all
+  const filteredCreators = folderFilteredCreators.filter((creator) => {
     if (filter === 'todo') {
       return !creator.engagement?.is_done;
     }
     return true;
   });
 
-  const todoCount = creators.filter((c) => !c.engagement?.is_done).length;
-  const doneCount = creators.filter((c) => c.engagement?.is_done).length;
+  const todoCount = folderFilteredCreators.filter((c) => !c.engagement?.is_done).length;
+  const doneCount = folderFilteredCreators.filter((c) => c.engagement?.is_done).length;
+
+  const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
-          Dream 100
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
+            Dream 100
+          </h1>
+          {selectedFolder && (
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+              Folder: {selectedFolder.name}
+            </p>
+          )}
+        </div>
         <Link
           to="/add"
           className="w-10 h-10 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
@@ -57,7 +74,7 @@ export default function Home() {
             color: filter === 'all' ? '#000' : 'var(--text-secondary)',
           }}
         >
-          All ({creators.length})
+          All ({folderFilteredCreators.length})
         </button>
       </div>
 
@@ -68,11 +85,13 @@ export default function Home() {
       ) : filteredCreators.length === 0 ? (
         <div className="text-center py-12">
           <p style={{ color: 'var(--text-secondary)' }}>
-            {filter === 'todo' && creators.length > 0
+            {filter === 'todo' && folderFilteredCreators.length > 0
               ? `All done! ${doneCount} creator${doneCount !== 1 ? 's' : ''} engaged today.`
+              : selectedFolderId
+              ? 'No creators in this folder yet.'
               : 'No creators yet. Add your first one!'}
           </p>
-          {creators.length === 0 && (
+          {folderFilteredCreators.length === 0 && (
             <Link
               to="/add"
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg transition-opacity hover:opacity-80"
@@ -89,7 +108,9 @@ export default function Home() {
             <CreatorCard
               key={creator.id}
               creator={creator}
+              folders={folders}
               onUpdateEngagement={updateEngagement}
+              onUpdateFolder={updateCreatorFolder}
             />
           ))}
         </div>

@@ -64,7 +64,8 @@ export function useCreators() {
   const addCreator = async (
     platform: Platform,
     username: string,
-    profileUrl: string
+    profileUrl: string,
+    folderId?: string | null
   ): Promise<Creator | null> => {
     if (!user) return null;
 
@@ -77,6 +78,7 @@ export function useCreators() {
           username,
           display_name: username,
           profile_url: profileUrl,
+          folder_id: folderId || null,
         })
         .select()
         .single();
@@ -87,6 +89,22 @@ export function useCreators() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add creator');
       return null;
+    }
+  };
+
+  const updateCreatorFolder = async (creatorId: string, folderId: string | null): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('creators')
+        .update({ folder_id: folderId })
+        .eq('id', creatorId);
+
+      if (error) throw error;
+      await fetchCreators();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update creator folder');
+      return false;
     }
   };
 
@@ -173,6 +191,7 @@ export function useCreators() {
     loading,
     error,
     addCreator,
+    updateCreatorFolder,
     updateEngagement,
     deleteCreator,
     deleteAllCreators,

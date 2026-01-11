@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Loader2, FolderOpen, ChevronDown, Check } from 'lucide-react';
 import { useCreators } from '../hooks/useCreators';
+import { useFolderContext } from '../hooks/useFolderContext';
 import type { Platform } from '../types';
 import PlatformBadge from '../components/PlatformBadge';
 
@@ -58,11 +59,15 @@ function parseProfileUrl(url: string): ParsedUrl {
 export default function Add() {
   const navigate = useNavigate();
   const { addCreator } = useCreators();
+  const { folders, selectedFolderId } = useFolderContext();
   const [url, setUrl] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(selectedFolderId);
+  const [folderMenuOpen, setFolderMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const parsed = parseProfileUrl(url);
+  const currentFolder = folders.find((f) => f.id === selectedFolder);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +80,7 @@ export default function Add() {
     setError('');
     setLoading(true);
 
-    const result = await addCreator(parsed.platform, parsed.username, parsed.url);
+    const result = await addCreator(parsed.platform, parsed.username, parsed.url, selectedFolder);
 
     if (result) {
       navigate('/');
@@ -124,6 +129,82 @@ export default function Add() {
           )}
         </div>
 
+        {/* Folder Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+            Folder (optional)
+          </label>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setFolderMenuOpen(!folderMenuOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <FolderOpen size={18} style={{ color: currentFolder?.color || 'var(--text-secondary)' }} />
+                <span>{currentFolder?.name || 'No folder'}</span>
+              </div>
+              <ChevronDown size={18} style={{ color: 'var(--text-secondary)' }} />
+            </button>
+
+            {folderMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setFolderMenuOpen(false)} />
+                <div
+                  className="absolute left-0 right-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 max-h-[200px] overflow-y-auto"
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFolder(null);
+                      setFolderMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:opacity-70 transition-opacity ${
+                      !selectedFolder ? 'font-medium' : ''
+                    }`}
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <FolderOpen size={16} style={{ color: 'var(--text-secondary)' }} />
+                    No folder
+                    {!selectedFolder && (
+                      <Check size={16} className="ml-auto" style={{ color: 'var(--success)' }} />
+                    )}
+                  </button>
+                  {folders.map((folder) => (
+                    <button
+                      type="button"
+                      key={folder.id}
+                      onClick={() => {
+                        setSelectedFolder(folder.id);
+                        setFolderMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:opacity-70 transition-opacity ${
+                        selectedFolder === folder.id ? 'font-medium' : ''
+                      }`}
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      <FolderOpen size={16} style={{ color: folder.color || 'var(--text-secondary)' }} />
+                      <span className="truncate">{folder.name}</span>
+                      {selectedFolder === folder.id && (
+                        <Check size={16} className="ml-auto flex-shrink-0" style={{ color: 'var(--success)' }} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {parsed.username && parsed.platform && (
           <div
             className="rounded-xl p-4 mb-6"
@@ -151,6 +232,14 @@ export default function Add() {
                 </div>
               </div>
             </div>
+            {currentFolder && (
+              <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+                <FolderOpen size={14} style={{ color: currentFolder.color || 'var(--text-secondary)' }} />
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Will be added to: {currentFolder.name}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
