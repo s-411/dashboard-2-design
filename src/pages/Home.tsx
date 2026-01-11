@@ -5,10 +5,10 @@ import { useCreators } from '../hooks/useCreators';
 import { useFolderContext } from '../hooks/useFolderContext';
 import CreatorCard from '../components/CreatorCard';
 
-type FilterType = 'todo' | 'all';
+type FilterType = 'todo' | 'done' | 'all';
 
 export default function Home() {
-  const { creators, loading, updateEngagement, updateCreatorFolder } = useCreators();
+  const { creators, loading, updateEngagement, updateCreatorFolder, deleteCreator } = useCreators();
   const { selectedFolderId, folders } = useFolderContext();
   const [filter, setFilter] = useState<FilterType>('todo');
 
@@ -17,10 +17,13 @@ export default function Home() {
     ? creators.filter((creator) => creator.folder_id === selectedFolderId)
     : creators;
 
-  // Then filter by todo/all
+  // Then filter by todo/done/all
   const filteredCreators = folderFilteredCreators.filter((creator) => {
     if (filter === 'todo') {
       return !creator.engagement?.is_done;
+    }
+    if (filter === 'done') {
+      return creator.engagement?.is_done;
     }
     return true;
   });
@@ -58,7 +61,7 @@ export default function Home() {
       >
         <button
           onClick={() => setFilter('todo')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors`}
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors`}
           style={{
             backgroundColor: filter === 'todo' ? 'var(--primary)' : 'transparent',
             color: filter === 'todo' ? '#000' : 'var(--text-secondary)',
@@ -67,8 +70,18 @@ export default function Home() {
           To Do ({todoCount})
         </button>
         <button
+          onClick={() => setFilter('done')}
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors`}
+          style={{
+            backgroundColor: filter === 'done' ? 'var(--primary)' : 'transparent',
+            color: filter === 'done' ? '#000' : 'var(--text-secondary)',
+          }}
+        >
+          Done ({doneCount})
+        </button>
+        <button
           onClick={() => setFilter('all')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors`}
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors`}
           style={{
             backgroundColor: filter === 'all' ? 'var(--primary)' : 'transparent',
             color: filter === 'all' ? '#000' : 'var(--text-secondary)',
@@ -87,6 +100,8 @@ export default function Home() {
           <p style={{ color: 'var(--text-secondary)' }}>
             {filter === 'todo' && folderFilteredCreators.length > 0
               ? `All done! ${doneCount} creator${doneCount !== 1 ? 's' : ''} engaged today.`
+              : filter === 'done' && folderFilteredCreators.length > 0
+              ? `No creators done yet. ${todoCount} to go!`
               : selectedFolderId
               ? 'No creators in this folder yet.'
               : 'No creators yet. Add your first one!'}
@@ -111,6 +126,7 @@ export default function Home() {
               folders={folders}
               onUpdateEngagement={updateEngagement}
               onUpdateFolder={updateCreatorFolder}
+              onDeleteCreator={deleteCreator}
             />
           ))}
         </div>

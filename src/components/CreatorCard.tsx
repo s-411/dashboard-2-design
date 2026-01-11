@@ -11,10 +11,13 @@ interface CreatorCardProps {
     updates: { likes_count?: number; comments_count?: number; is_done?: boolean }
   ) => void;
   onUpdateFolder: (creatorId: string, folderId: string | null) => Promise<boolean>;
+  onDeleteCreator: (creatorId: string) => Promise<void>;
 }
 
-export default function CreatorCard({ creator, folders, onUpdateEngagement, onUpdateFolder }: CreatorCardProps) {
+export default function CreatorCard({ creator, folders, onUpdateEngagement, onUpdateFolder, onDeleteCreator }: CreatorCardProps) {
   const [folderMenuOpen, setFolderMenuOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const engagement = creator.engagement;
   const isDone = engagement?.is_done ?? false;
   const likesCount = engagement?.likes_count ?? 0;
@@ -39,6 +42,13 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
   const handleFolderChange = async (folderId: string | null) => {
     await onUpdateFolder(creator.id, folderId);
     setFolderMenuOpen(false);
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    await onDeleteCreator(creator.id);
+    setIsDeleting(false);
+    setShowDeleteModal(false);
   };
 
   return (
@@ -139,12 +149,21 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
               {creator.display_name || creator.username}
             </h3>
             {isDone && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-medium"
-                style={{ backgroundColor: 'var(--success)', color: '#000' }}
-              >
-                Done
-              </span>
+              <>
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={{ backgroundColor: 'var(--success)', color: '#000' }}
+                >
+                  Done
+                </span>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="text-xs px-2 py-0.5 rounded-full font-medium hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: '#ef4444', color: '#fff' }}
+                >
+                  Delete
+                </button>
+              </>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
@@ -167,16 +186,16 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
       </div>
 
       <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleLikesChange(-1)}
-              className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
-              <Minus size={14} />
+              <Minus size={20} />
             </button>
-            <div className="flex items-center gap-1 min-w-[50px] justify-center">
+            <div className="flex items-center gap-1 min-w-[36px] justify-center">
               <Heart size={16} style={{ color: '#ef4444' }} />
               <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                 {likesCount}
@@ -184,22 +203,22 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
             </div>
             <button
               onClick={() => handleLikesChange(1)}
-              className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
-              <Plus size={14} />
+              <Plus size={20} />
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleCommentsChange(-1)}
-              className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
-              <Minus size={14} />
+              <Minus size={20} />
             </button>
-            <div className="flex items-center gap-1 min-w-[50px] justify-center">
+            <div className="flex items-center gap-1 min-w-[36px] justify-center">
               <MessageCircle size={16} style={{ color: 'var(--primary)' }} />
               <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                 {commentsCount}
@@ -207,10 +226,10 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
             </div>
             <button
               onClick={() => handleCommentsChange(1)}
-              className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
-              <Plus size={14} />
+              <Plus size={20} />
             </button>
           </div>
         </div>
@@ -228,6 +247,48 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
           <Check size={18} />
         </button>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setShowDeleteModal(false)}
+          />
+          <div
+            className="relative rounded-xl p-6 max-w-sm w-full shadow-xl"
+            style={{
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+              Delete Creator
+            </h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+              Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>{creator.display_name || creator.username}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-lg font-medium hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: 'var(--border)', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-lg font-medium hover:opacity-80 transition-opacity disabled:opacity-50"
+                style={{ backgroundColor: '#ef4444', color: '#fff' }}
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
