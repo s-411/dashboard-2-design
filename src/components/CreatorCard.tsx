@@ -43,13 +43,74 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
 
   return (
     <div
-      className={`rounded-xl p-4 transition-all ${isDone ? 'opacity-60' : ''}`}
+      className={`relative rounded-xl p-4 transition-all ${isDone ? 'opacity-60' : ''}`}
       style={{
         backgroundColor: 'var(--surface)',
         border: '1px solid var(--border)',
         filter: isDone ? 'grayscale(0.5)' : 'none',
       }}
     >
+      {/* Folder label - top right corner */}
+      <div className="absolute top-3 right-3">
+        <div className="relative">
+          <button
+            onClick={() => setFolderMenuOpen(!folderMenuOpen)}
+            className="flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-opacity hover:opacity-70"
+            style={{
+              backgroundColor: 'var(--border)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <FolderOpen size={12} style={{ color: currentFolder?.color || 'var(--text-secondary)' }} />
+            <span className="truncate max-w-[80px]">{currentFolder?.name || 'No folder'}</span>
+            <ChevronDown size={12} />
+          </button>
+
+          {folderMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setFolderMenuOpen(false)} />
+              <div
+                className="absolute right-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[200px] overflow-y-auto"
+                style={{
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <button
+                  onClick={() => handleFolderChange(null)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity ${
+                    !creator.folder_id ? 'font-medium' : ''
+                  }`}
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  <FolderOpen size={14} style={{ color: 'var(--text-secondary)' }} />
+                  No folder
+                  {!creator.folder_id && (
+                    <Check size={14} className="ml-auto" style={{ color: 'var(--success)' }} />
+                  )}
+                </button>
+                {folders.map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => handleFolderChange(folder.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity ${
+                      creator.folder_id === folder.id ? 'font-medium' : ''
+                    }`}
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <FolderOpen size={14} style={{ color: folder.color || 'var(--text-secondary)' }} />
+                    <span className="truncate">{folder.name}</span>
+                    {creator.folder_id === folder.id && (
+                      <Check size={14} className="ml-auto flex-shrink-0" style={{ color: 'var(--success)' }} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
       <div className="flex items-start gap-3">
         <div className="relative">
           {creator.profile_pic_url ? (
@@ -66,6 +127,10 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
               {(creator.display_name || creator.username).charAt(0).toUpperCase()}
             </div>
           )}
+          {/* Platform badge positioned on profile pic */}
+          <div className="absolute -bottom-1 -right-1">
+            <PlatformBadge platform={creator.platform} size="sm" />
+          </div>
         </div>
 
         <div className="flex-1 min-w-0">
@@ -86,7 +151,6 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
             <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               @{creator.username}
             </span>
-            <PlatformBadge platform={creator.platform} size="sm" />
             {creator.profile_url && (
               <a
                 href={creator.profile_url}
@@ -97,65 +161,6 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
               >
                 <ExternalLink size={14} />
               </a>
-            )}
-          </div>
-
-          {/* Folder selector */}
-          <div className="relative mt-2">
-            <button
-              onClick={() => setFolderMenuOpen(!folderMenuOpen)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-opacity hover:opacity-70"
-              style={{
-                backgroundColor: 'var(--border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <FolderOpen size={12} style={{ color: currentFolder?.color || 'var(--text-secondary)' }} />
-              <span className="truncate max-w-[100px]">{currentFolder?.name || 'No folder'}</span>
-              <ChevronDown size={12} />
-            </button>
-
-            {folderMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setFolderMenuOpen(false)} />
-                <div
-                  className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 min-w-[140px] max-h-[200px] overflow-y-auto"
-                  style={{
-                    backgroundColor: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  <button
-                    onClick={() => handleFolderChange(null)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity ${
-                      !creator.folder_id ? 'font-medium' : ''
-                    }`}
-                    style={{ color: 'var(--text-primary)' }}
-                  >
-                    <FolderOpen size={14} style={{ color: 'var(--text-secondary)' }} />
-                    No folder
-                    {!creator.folder_id && (
-                      <Check size={14} className="ml-auto" style={{ color: 'var(--success)' }} />
-                    )}
-                  </button>
-                  {folders.map((folder) => (
-                    <button
-                      key={folder.id}
-                      onClick={() => handleFolderChange(folder.id)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity ${
-                        creator.folder_id === folder.id ? 'font-medium' : ''
-                      }`}
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      <FolderOpen size={14} style={{ color: folder.color || 'var(--text-secondary)' }} />
-                      <span className="truncate">{folder.name}</span>
-                      {creator.folder_id === folder.id && (
-                        <Check size={14} className="ml-auto flex-shrink-0" style={{ color: 'var(--success)' }} />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </>
             )}
           </div>
         </div>

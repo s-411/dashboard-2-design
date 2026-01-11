@@ -115,8 +115,41 @@ export function useCreators() {
     if (!user) return;
 
     const today = getTodayDate();
-    const existingLog = creators.find((c) => c.id === creatorId)?.engagement;
+    const creatorIndex = creators.findIndex((c) => c.id === creatorId);
+    if (creatorIndex === -1) return;
 
+    const existingLog = creators[creatorIndex].engagement;
+    const previousCreators = [...creators];
+
+    // Optimistically update local state immediately
+    setCreators((prev) =>
+      prev.map((creator) => {
+        if (creator.id !== creatorId) return creator;
+
+        const currentEngagement = creator.engagement || {
+          id: 'temp-' + Date.now(),
+          creator_id: creatorId,
+          user_id: user.id,
+          date: today,
+          likes_count: 0,
+          comments_count: 0,
+          is_done: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        return {
+          ...creator,
+          engagement: {
+            ...currentEngagement,
+            ...updates,
+            updated_at: new Date().toISOString(),
+          },
+        };
+      })
+    );
+
+    // Sync to Supabase in background
     try {
       if (existingLog) {
         const { error } = await supabase
@@ -126,22 +159,55 @@ export function useCreators() {
 
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('engagement_logs').insert({
-          creator_id: creatorId,
-          user_id: user.id,
-          date: today,
-          likes_count: updates.likes_count ?? 0,
-          comments_count: updates.comments_count ?? 0,
-          is_done: updates.is_done ?? false,
-        });
+        const { data, error } = await supabase
+          .from('engagement_logs')
+          .insert({
+            creator_id: creatorId,
+            user_id: user.id,
+            date: today,
+            likes_count: updates.likes_count ?? 0,
+            comments_count: updates.comments_count ?? 0,
+            is_done: updates.is_done ?? false,
+          })
+          .select()
+          .single();
 
         if (error) throw error;
-      }
 
-      await fetchCreators();
+        // Update with real ID from database
+        if (data) {
+          setCreators((prev) =>
+            prev.map((creator) => {
+              if (creator.id !== creatorId) return creator;
+              return { ...creator, engagement: data };
+            })
+          );
+        }
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update engagement');
+      // Revert on failure
+      setCreators(previousCreators);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update engagement';
+      setError(errorMessage);
+      // Show error toast
+      showErrorToast(errorMessage);
     }
+  };
+
+  const showErrorToast = (message: string) => {
+    // Create and show a toast notification
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-medium z-50 animate-fade-in';
+    toast.style.backgroundColor = '#ef4444';
+    toast.style.color = '#fff';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
   };
 
   const deleteCreator = async (creatorId: string) => {

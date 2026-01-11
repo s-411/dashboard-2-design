@@ -10,12 +10,9 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  // TODO: Remove this bypass - for development only
-  const bypassAuth = true;
-
   const { user, loading } = useAuth();
 
-  if (loading && !bypassAuth) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
         <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
@@ -23,7 +20,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user && !bypassAuth) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
