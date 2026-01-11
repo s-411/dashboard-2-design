@@ -22,36 +22,32 @@ export default function Layout() {
     { path: '/settings', icon: Settings, label: 'Settings' },
   ];
 
-  const isHomePage = location.pathname === '/';
-
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Sidebar - only show on home page */}
-      {isHomePage && (
-        <Sidebar
-          folders={folders}
-          selectedFolderId={selectedFolderId}
-          onSelectFolder={setSelectedFolderId}
-          onCreateFolder={createFolder}
-          onRenameFolder={renameFolder}
-          onDeleteFolder={deleteFolder}
-          isCollapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-      )}
+      {/* Sidebar - visible on desktop for all pages */}
+      <Sidebar
+        folders={folders}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={setSelectedFolderId}
+        onCreateFolder={createFolder}
+        onRenameFolder={renameFolder}
+        onDeleteFolder={deleteFolder}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-screen">
-        <main className="flex-1 pb-20">
+        <main className="flex-1 pb-20 md:pb-6">
           <Outlet />
         </main>
 
+        {/* Bottom nav - mobile only */}
         <nav
-          className="fixed bottom-0 left-0 right-0 safe-area-inset-bottom"
+          className="fixed bottom-0 left-0 right-0 safe-area-inset-bottom md:hidden"
           style={{
             backgroundColor: 'var(--surface)',
             borderTop: '1px solid var(--border)',
-            marginLeft: isHomePage ? (sidebarCollapsed ? '48px' : '250px') : '0',
           }}
         >
           <div className="max-w-lg mx-auto px-4">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   Users,
   FolderOpen,
@@ -10,6 +11,9 @@ import {
   Trash2,
   X,
   Check,
+  Home,
+  BarChart3,
+  Settings,
 } from 'lucide-react';
 import type { Folder } from '../types';
 
@@ -23,6 +27,12 @@ interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }
+
+const navItems = [
+  { path: '/', icon: Home, label: 'Home' },
+  { path: '/stats', icon: BarChart3, label: 'Stats' },
+  { path: '/settings', icon: Settings, label: 'Settings' },
+];
 
 export default function Sidebar({
   folders,
@@ -86,22 +96,53 @@ export default function Sidebar({
     setMenuOpenId(null);
   };
 
+  const location = useLocation();
+
   if (isCollapsed) {
     return (
       <div
-        className="w-12 flex-shrink-0 flex flex-col items-center py-4 border-r"
+        className="hidden md:flex w-12 flex-shrink-0 flex-col items-center py-4 border-r"
         style={{
           backgroundColor: 'var(--surface)',
           borderColor: 'var(--border)',
         }}
       >
+        {/* Logo */}
+        <img src="/logo.png" alt="Dream 100" className="w-8 h-8 rounded-lg mb-4" />
+
+        {/* Nav Items */}
+        {navItems.map(({ path, icon: Icon, label }) => {
+          const isActive = location.pathname === path;
+          return (
+            <NavLink
+              key={path}
+              to={path}
+              className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2"
+              style={{
+                backgroundColor: isActive ? 'var(--primary)' : 'var(--border)',
+                color: isActive ? '#000' : 'var(--text-secondary)',
+              }}
+              title={label}
+            >
+              <Icon size={16} />
+            </NavLink>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="w-6 h-px my-2" style={{ backgroundColor: 'var(--border)' }} />
+
+        {/* Expand button */}
         <button
           onClick={onToggleCollapse}
-          className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-4"
+          className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2"
           style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
+          title="Expand sidebar"
         >
           <ChevronRight size={18} />
         </button>
+
+        {/* All Creators */}
         <button
           onClick={() => onSelectFolder(null)}
           className={`w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2 ${
@@ -140,22 +181,54 @@ export default function Sidebar({
 
   return (
     <div
-      className="w-[250px] flex-shrink-0 flex flex-col border-r h-full"
+      className="hidden md:flex w-[250px] flex-shrink-0 flex-col border-r h-full"
       style={{
         backgroundColor: 'var(--surface)',
         borderColor: 'var(--border)',
       }}
     >
-      <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-        <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+      {/* Logo and App Name */}
+      <div className="flex items-center gap-3 p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+        <img src="/logo.png" alt="Dream 100" className="w-10 h-10 rounded-lg" />
+        <span className="font-bold text-lg" style={{ color: 'var(--primary)' }}>
+          Dream 100
+        </span>
+      </div>
+
+      {/* Navigation */}
+      <div className="p-2 border-b" style={{ borderColor: 'var(--border)' }}>
+        {navItems.map(({ path, icon: Icon, label }) => {
+          const isActive = location.pathname === path;
+          return (
+            <NavLink
+              key={path}
+              to={path}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mb-1 ${
+                isActive ? '' : 'hover:opacity-80'
+              }`}
+              style={{
+                backgroundColor: isActive ? 'var(--primary)' : 'transparent',
+                color: isActive ? '#000' : 'var(--text-primary)',
+              }}
+            >
+              <Icon size={18} />
+              <span className="font-medium">{label}</span>
+            </NavLink>
+          );
+        })}
+      </div>
+
+      {/* Folders Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <h2 className="font-semibold text-sm uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>
           Folders
         </h2>
         <button
           onClick={onToggleCollapse}
-          className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity"
+          className="w-7 h-7 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity"
           style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={16} />
         </button>
       </div>
 
