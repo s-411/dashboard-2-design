@@ -190,7 +190,7 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
           <div className="flex items-center gap-1">
             <button
               onClick={() => handleLikesChange(-1)}
-              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
               <Minus size={20} />
@@ -203,7 +203,7 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
             </div>
             <button
               onClick={() => handleLikesChange(1)}
-              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
               <Plus size={20} />
@@ -213,7 +213,7 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
           <div className="flex items-center gap-1">
             <button
               onClick={() => handleCommentsChange(-1)}
-              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
               <Minus size={20} />
@@ -226,7 +226,7 @@ export default function CreatorCard({ creator, folders, onUpdateEngagement, onUp
             </div>
             <button
               onClick={() => handleCommentsChange(1)}
-              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+              className="w-14 h-14 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity cursor-pointer"
               style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
               <Plus size={20} />

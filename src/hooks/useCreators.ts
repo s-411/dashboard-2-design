@@ -450,10 +450,14 @@ export function useSettings() {
   }, [user]);
 
   const applyDarkMode = (isDark: boolean) => {
-    if (isDark) {
-      document.documentElement.classList.remove('light');
-    } else {
+    const isCurrentlyLight = document.documentElement.classList.contains('light');
+    const shouldBeLight = !isDark;
+
+    // Only modify DOM if there's actually a change needed
+    if (shouldBeLight && !isCurrentlyLight) {
       document.documentElement.classList.add('light');
+    } else if (!shouldBeLight && isCurrentlyLight) {
+      document.documentElement.classList.remove('light');
     }
   };
 

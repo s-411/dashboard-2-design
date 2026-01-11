@@ -58,7 +58,7 @@ export default function Settings() {
           <button
             onClick={handleToggleDarkMode}
             disabled={settingsLoading}
-            className="w-full flex items-center justify-between py-2"
+            className="w-full flex items-center justify-between py-2 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               {settings?.dark_mode ? (
