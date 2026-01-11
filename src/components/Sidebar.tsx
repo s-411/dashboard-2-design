@@ -12,6 +12,7 @@ import {
   X,
   Check,
   Home,
+  Calendar,
   BarChart3,
   Settings,
 } from 'lucide-react';
@@ -30,6 +31,7 @@ interface SidebarProps {
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
+  { path: '/calendar', icon: Calendar, label: 'Calendar' },
   { path: '/stats', icon: BarChart3, label: 'Stats' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];

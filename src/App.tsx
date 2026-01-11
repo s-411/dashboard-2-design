@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Add from './pages/Add';
 import Stats from './pages/Stats';
 import Settings from './pages/Settings';
+import Calendar from './pages/Calendar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -59,6 +60,7 @@ function AppRoutes() {
         }
       >
         <Route index element={<Home />} />
+        <Route path="calendar" element={<Calendar />} />
         <Route path="stats" element={<Stats />} />
         <Route path="settings" element={<Settings />} />
       </Route>
