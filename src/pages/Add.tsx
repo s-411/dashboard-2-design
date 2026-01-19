@@ -1,10 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Loader2, FolderOpen, ChevronDown, Check } from 'lucide-react';
 import { useCreators } from '../hooks/useCreators';
 import { useFolderContext } from '../hooks/useFolderContext';
 import type { Platform } from '../types';
 import PlatformBadge from '../components/PlatformBadge';
+
+interface ProfileData {
+  displayName: string | null;
+  profilePicUrl: string | null;
+  followerCount: number | null;
+}
+
+function formatFollowerCount(count: number): string {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+  }
+  return count.toString();
+}
 
 interface ParsedUrl {
   platform: Platform | null;
@@ -65,9 +81,41 @@ export default function Add() {
   const [folderMenuOpen, setFolderMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [fetchingProfile, setFetchingProfile] = useState(false);
 
   const parsed = parseProfileUrl(url);
   const currentFolder = folders.find((f) => f.id === selectedFolder);
+
+  // Fetch Instagram profile when URL is detected
+  useEffect(() => {
+    if (parsed.platform === 'instagram' && parsed.username) {
+      const fetchInstagramProfile = async () => {
+        setFetchingProfile(true);
+        setProfileData(null);
+        try {
+          const response = await fetch(`/api/instagram/${encodeURIComponent(parsed.username!)}`);
+          const data = await response.json();
+          if (data.success) {
+            setProfileData({
+              displayName: data.displayName,
+              profilePicUrl: data.profilePicUrl,
+              followerCount: data.followerCount,
+            });
+          }
+        } catch (err) {
+          console.error('Failed to fetch Instagram profile:', err);
+        } finally {
+          setFetchingProfile(false);
+        }
+      };
+
+      const timeoutId = setTimeout(fetchInstagramProfile, 500);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setProfileData(null);
+    }
+  }, [parsed.platform, parsed.username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +128,14 @@ export default function Add() {
     setError('');
     setLoading(true);
 
-    const result = await addCreator(parsed.platform, parsed.username, parsed.url, selectedFolder);
+    const result = await addCreator(
+      parsed.platform,
+      parsed.username,
+      parsed.url,
+      selectedFolder,
+      profileData?.displayName,
+      profileData?.profilePicUrl
+    );
 
     if (result) {
       navigate('/');
@@ -212,23 +267,39 @@ export default function Add() {
           >
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               Preview
+              {fetchingProfile && (
+                <Loader2 size={14} className="inline-block ml-2 animate-spin" style={{ color: 'var(--text-secondary)' }} />
+              )}
             </p>
             <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'var(--border)' }}
-              >
-                <User size={24} style={{ color: 'var(--text-secondary)' }} />
-              </div>
+              {profileData?.profilePicUrl ? (
+                <img
+                  src={profileData.profilePicUrl}
+                  alt={profileData.displayName || parsed.username}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--border)' }}
+                >
+                  <User size={24} style={{ color: 'var(--text-secondary)' }} />
+                </div>
+              )}
               <div className="flex-1">
                 <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  @{parsed.username}
+                  {profileData?.displayName || `@${parsed.username}`}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
                   <PlatformBadge platform={parsed.platform} size="sm" />
                   <span className="text-sm capitalize" style={{ color: 'var(--text-secondary)' }}>
                     {parsed.platform === 'x' ? 'X (Twitter)' : parsed.platform}
                   </span>
+                  {profileData?.followerCount && (
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      · {formatFollowerCount(profileData.followerCount)} followers
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

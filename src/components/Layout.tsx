@@ -1,5 +1,4 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, Calendar, BarChart3, Settings } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { useFolderContext } from '../hooks/useFolderContext';
 
@@ -17,15 +16,18 @@ export default function Layout() {
   } = useFolderContext();
 
   const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/calendar', icon: Calendar, label: 'Calendar' },
-    { path: '/stats', icon: BarChart3, label: 'Stats' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/', icon: 'dashboard', label: 'Home' },
+    { path: '/calendar', icon: 'calendar_month', label: 'Calendar' },
+    { path: '/stats', icon: 'insights', label: 'Stats' },
+    { path: '/settings', icon: 'settings', label: 'Settings' },
   ];
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Sidebar - visible on desktop for all pages */}
+    <div
+      className="h-screen flex overflow-hidden transition-colors duration-300"
+      style={{ backgroundColor: 'var(--background)' }}
+    >
+      {/* Sidebar - visible on desktop */}
       <Sidebar
         folders={folders}
         selectedFolderId={selectedFolderId}
@@ -38,14 +40,14 @@ export default function Layout() {
       />
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        <main className="flex-1 pb-20 md:pb-6">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div className="flex-1 overflow-auto pb-20 md:pb-0">
           <Outlet />
-        </main>
+        </div>
 
         {/* Bottom nav - mobile only */}
         <nav
-          className="fixed bottom-0 left-0 right-0 safe-area-inset-bottom md:hidden"
+          className="fixed bottom-0 left-0 right-0 safe-area-inset-bottom md:hidden z-50"
           style={{
             backgroundColor: 'var(--surface)',
             borderTop: '1px solid var(--border)',
@@ -53,7 +55,7 @@ export default function Layout() {
         >
           <div className="max-w-lg mx-auto px-4">
             <div className="flex items-center justify-around py-3">
-              {navItems.map(({ path, icon: Icon, label }) => {
+              {navItems.map(({ path, icon, label }) => {
                 const isActive = location.pathname === path;
                 return (
                   <NavLink
@@ -61,10 +63,12 @@ export default function Layout() {
                     to={path}
                     className="flex flex-col items-center gap-1 px-4 py-1 transition-colors"
                   >
-                    <Icon
-                      size={24}
+                    <span
+                      className="material-symbols-outlined"
                       style={{ color: isActive ? 'var(--primary)' : 'var(--text-secondary)' }}
-                    />
+                    >
+                      {icon}
+                    </span>
                     <span
                       className="text-xs font-medium"
                       style={{ color: isActive ? 'var(--primary)' : 'var(--text-secondary)' }}
@@ -77,7 +81,7 @@ export default function Layout() {
             </div>
           </div>
         </nav>
-      </div>
+      </main>
     </div>
   );
 }

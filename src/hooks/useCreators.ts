@@ -65,7 +65,9 @@ export function useCreators() {
     platform: Platform,
     username: string,
     profileUrl: string,
-    folderId?: string | null
+    folderId?: string | null,
+    displayName?: string | null,
+    profilePicUrl?: string | null
   ): Promise<Creator | null> => {
     if (!user) return null;
 
@@ -76,8 +78,9 @@ export function useCreators() {
           user_id: user.id,
           platform,
           username,
-          display_name: username,
+          display_name: displayName || username,
           profile_url: profileUrl,
+          profile_pic_url: profilePicUrl || null,
           folder_id: folderId || null,
         })
         .select()

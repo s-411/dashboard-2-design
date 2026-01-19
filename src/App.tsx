@@ -9,6 +9,13 @@ import Settings from './pages/Settings';
 import Calendar from './pages/Calendar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
+import Teams from './pages/Teams';
+import Users from './pages/Users';
+import Subscription from './pages/Subscription';
+import Payment from './pages/Payment';
+import Apps from './pages/Apps';
+import Variables from './pages/Variables';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -51,6 +58,13 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/teams" element={<Teams />} />
+      <Route path="/users" element={<Users />} />
+      <Route path="/subscription" element={<Subscription />} />
+      <Route path="/payment" element={<Payment />} />
+      <Route path="/apps" element={<Apps />} />
+      <Route path="/variables" element={<Variables />} />
       <Route
         path="/"
         element={

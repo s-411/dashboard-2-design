@@ -1,5 +1,7 @@
 export type Platform = 'instagram' | 'youtube' | 'x' | 'tiktok';
 
+export type CreatorStatus = 'prospect' | 'negotiating' | 'partnered' | 'dormant';
+
 export interface Profile {
   id: string;
   email: string;
@@ -18,6 +20,12 @@ export interface Creator {
   profile_url: string | null;
   notes: string | null;
   created_at: string;
+  // New fields for performance dashboard
+  followers?: number | null;
+  growth_30d?: number | null;
+  avg_engagement?: number | null;
+  status?: CreatorStatus | null;
+  last_post?: string | null;
 }
 
 export interface EngagementLog {

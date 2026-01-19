@@ -1,20 +1,12 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  Users,
-  FolderOpen,
   Plus,
-  ChevronLeft,
-  ChevronRight,
   MoreHorizontal,
   Pencil,
   Trash2,
   X,
   Check,
-  Home,
-  Calendar,
-  BarChart3,
-  Settings,
 } from 'lucide-react';
 import type { Folder } from '../types';
 
@@ -30,10 +22,10 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/calendar', icon: Calendar, label: 'Calendar' },
-  { path: '/stats', icon: BarChart3, label: 'Stats' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/', icon: 'dashboard', label: 'Performance' },
+  { path: '/calendar', icon: 'calendar_month', label: 'Campaigns' },
+  { path: '/stats', icon: 'insights', label: 'Analytics' },
+  { path: '/settings', icon: 'settings', label: 'Settings' },
 ];
 
 export default function Sidebar({
@@ -41,10 +33,8 @@ export default function Sidebar({
   selectedFolderId,
   onSelectFolder,
   onCreateFolder,
-  onRenameFolder,
   onDeleteFolder,
-  isCollapsed,
-  onToggleCollapse,
+  onRenameFolder,
 }: SidebarProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -52,6 +42,9 @@ export default function Sidebar({
   const [editingName, setEditingName] = useState('');
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [collectionsExpanded, setCollectionsExpanded] = useState(true);
+
+  const location = useLocation();
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim() || isSubmitting) return;
@@ -98,283 +91,226 @@ export default function Sidebar({
     setMenuOpenId(null);
   };
 
-  const location = useLocation();
-
-  if (isCollapsed) {
-    return (
-      <div
-        className="hidden md:flex w-12 flex-shrink-0 flex-col items-center py-4 border-r"
-        style={{
-          backgroundColor: 'var(--surface)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        {/* Logo */}
-        <img src="/logo.png" alt="Dream 100" className="w-8 h-8 rounded-lg mb-4" />
-
-        {/* Nav Items */}
-        {navItems.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path;
-          return (
-            <NavLink
-              key={path}
-              to={path}
-              className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2"
-              style={{
-                backgroundColor: isActive ? 'var(--primary)' : 'var(--border)',
-                color: isActive ? '#000' : 'var(--text-secondary)',
-              }}
-              title={label}
-            >
-              <Icon size={16} />
-            </NavLink>
-          );
-        })}
-
-        {/* Divider */}
-        <div className="w-6 h-px my-2" style={{ backgroundColor: 'var(--border)' }} />
-
-        {/* Expand button */}
-        <button
-          onClick={onToggleCollapse}
-          className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2"
-          style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
-          title="Expand sidebar"
-        >
-          <ChevronRight size={18} />
-        </button>
-
-        {/* All Creators */}
-        <button
-          onClick={() => onSelectFolder(null)}
-          className={`w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2 ${
-            selectedFolderId === null ? 'ring-2 ring-[var(--primary)]' : ''
-          }`}
-          style={{
-            backgroundColor: selectedFolderId === null ? 'var(--primary)' : 'var(--border)',
-            color: selectedFolderId === null ? '#000' : 'var(--text-secondary)',
-          }}
-          title="All Creators"
-        >
-          <Users size={16} />
-        </button>
-        {folders.map((folder) => (
-          <button
-            key={folder.id}
-            onClick={() => onSelectFolder(folder.id)}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity mb-2 ${
-              selectedFolderId === folder.id ? 'ring-2 ring-[var(--primary)]' : ''
-            }`}
-            style={{
-              backgroundColor:
-                selectedFolderId === folder.id
-                  ? folder.color || 'var(--primary)'
-                  : 'var(--border)',
-              color: selectedFolderId === folder.id ? '#000' : 'var(--text-secondary)',
-            }}
-            title={folder.name}
-          >
-            <FolderOpen size={16} />
-          </button>
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="hidden md:flex w-[250px] flex-shrink-0 flex-col border-r h-full"
+    <aside
+      className="hidden md:flex w-64 flex-col h-screen shrink-0 z-20"
       style={{
         backgroundColor: 'var(--surface)',
-        borderColor: 'var(--border)',
+        borderRight: '1px solid var(--border)',
       }}
     >
-      {/* Logo and App Name */}
-      <div className="flex items-center gap-3 p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-        <img src="/logo.png" alt="Dream 100" className="w-10 h-10 rounded-lg" />
-        <span className="font-bold text-lg" style={{ color: 'var(--primary)' }}>
-          Dream 100
-        </span>
+      {/* Logo Header */}
+      <div
+        className="h-16 flex items-center px-6"
+        style={{ borderBottom: '1px solid transparent' }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: '#111827' }}
+          >
+            <span
+              className="material-symbols-outlined text-[20px]"
+              style={{ color: 'var(--primary)' }}
+            >
+              favorite
+            </span>
+          </div>
+          <span
+            className="font-bold text-xl uppercase tracking-tighter"
+            style={{ color: 'var(--primary)' }}
+          >
+            Dream 100
+          </span>
+        </div>
       </div>
 
       {/* Navigation */}
-      <div className="p-2 border-b" style={{ borderColor: 'var(--border)' }}>
-        {navItems.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path;
-          return (
-            <NavLink
-              key={path}
-              to={path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mb-1 ${
-                isActive ? '' : 'hover:opacity-80'
-              }`}
-              style={{
-                backgroundColor: isActive ? 'var(--primary)' : 'transparent',
-                color: isActive ? '#000' : 'var(--text-primary)',
-              }}
+      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide">
+        <ul className="space-y-1">
+          {navItems.map(({ path, icon, label }) => {
+            const isActive = location.pathname === path;
+            return (
+              <li key={path}>
+                <NavLink
+                  to={path}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors"
+                  style={{
+                    backgroundColor: isActive ? 'var(--primary)' : 'transparent',
+                    color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                    boxShadow: isActive ? '0 4px 6px -1px rgba(0, 155, 240, 0.2)' : 'none',
+                  }}
+                >
+                  <span className="material-symbols-outlined">{icon}</span>
+                  <span className="font-medium">{label}</span>
+                </NavLink>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Collections Section */}
+        <div>
+          <div className="flex items-center justify-between px-4 mb-2">
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest"
+              style={{ color: 'var(--text-muted)' }}
             >
-              <Icon size={18} />
-              <span className="font-medium">{label}</span>
-            </NavLink>
-          );
-        })}
-      </div>
-
-      {/* Folders Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-        <h2 className="font-semibold text-sm uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>
-          Folders
-        </h2>
-        <button
-          onClick={onToggleCollapse}
-          className="w-7 h-7 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity"
-          style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
-        >
-          <ChevronLeft size={16} />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-2">
-        {/* All Creators */}
-        <button
-          onClick={() => onSelectFolder(null)}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mb-1 ${
-            selectedFolderId === null ? '' : 'hover:opacity-80'
-          }`}
-          style={{
-            backgroundColor: selectedFolderId === null ? 'var(--primary)' : 'transparent',
-            color: selectedFolderId === null ? '#000' : 'var(--text-primary)',
-          }}
-        >
-          <Users size={18} />
-          <span className="font-medium">All Creators</span>
-        </button>
-
-        {/* Folder List */}
-        {folders.map((folder) => (
-          <div key={folder.id} className="relative mb-1">
-            {editingFolderId === folder.id ? (
-              <div className="flex items-center gap-2 px-2 py-1.5">
-                <input
-                  type="text"
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleRenameFolder(folder.id);
-                    if (e.key === 'Escape') {
-                      setEditingFolderId(null);
-                      setEditingName('');
-                    }
-                  }}
-                  autoFocus
-                  className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                  style={{
-                    backgroundColor: 'var(--background)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
-                <button
-                  onClick={() => handleRenameFolder(folder.id)}
-                  disabled={isSubmitting}
-                  className="w-7 h-7 rounded flex items-center justify-center hover:opacity-70"
-                  style={{ backgroundColor: 'var(--success)', color: '#000' }}
-                >
-                  <Check size={14} />
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingFolderId(null);
-                    setEditingName('');
-                  }}
-                  className="w-7 h-7 rounded flex items-center justify-center hover:opacity-70"
-                  style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <div
-                className={`flex items-center gap-2 rounded-lg transition-colors ${
-                  selectedFolderId === folder.id ? '' : 'hover:opacity-80'
-                }`}
-                style={{
-                  backgroundColor: selectedFolderId === folder.id ? 'var(--primary)' : 'transparent',
-                }}
-              >
-                <button
-                  onClick={() => onSelectFolder(folder.id)}
-                  className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left"
-                  style={{
-                    color: selectedFolderId === folder.id ? '#000' : 'var(--text-primary)',
-                  }}
-                >
-                  <FolderOpen
-                    size={18}
-                    style={{
-                      color:
-                        selectedFolderId === folder.id
-                          ? '#000'
-                          : folder.color || 'var(--text-secondary)',
-                    }}
-                  />
-                  <span className="font-medium truncate">{folder.name}</span>
-                </button>
-                <div className="relative pr-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuOpenId(menuOpenId === folder.id ? null : folder.id);
-                    }}
-                    className="w-7 h-7 rounded flex items-center justify-center hover:opacity-70 transition-opacity"
-                    style={{
-                      color: selectedFolderId === folder.id ? '#000' : 'var(--text-secondary)',
-                    }}
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
-
-                  {menuOpenId === folder.id && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setMenuOpenId(null)}
-                      />
-                      <div
-                        className="absolute right-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 min-w-[120px]"
-                        style={{
-                          backgroundColor: 'var(--surface)',
-                          border: '1px solid var(--border)',
-                        }}
-                      >
-                        <button
-                          onClick={() => startEditing(folder)}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
-                          <Pencil size={14} />
-                          Rename
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFolder(folder.id)}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity"
-                          style={{ color: '#ef4444' }}
-                        >
-                          <Trash2 size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
+              Collections
+            </span>
+            <button
+              onClick={() => setCollectionsExpanded(!collectionsExpanded)}
+              className="w-5 h-5 flex items-center justify-center rounded hover:opacity-70 transition-opacity"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <span className="material-symbols-outlined text-sm">
+                {collectionsExpanded ? 'unfold_less' : 'unfold_more'}
+              </span>
+            </button>
           </div>
-        ))}
-      </div>
 
-      {/* New Folder Button */}
-      <div className="p-3 border-t" style={{ borderColor: 'var(--border)' }}>
+          {collectionsExpanded && (
+            <ul className="space-y-1 text-sm">
+              {/* Master List */}
+              <li>
+                <button
+                  onClick={() => onSelectFolder(null)}
+                  className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors hover:opacity-80"
+                  style={{
+                    backgroundColor: selectedFolderId === null ? 'rgba(0, 155, 240, 0.1)' : 'transparent',
+                    color: selectedFolderId === null ? 'var(--primary)' : 'var(--text-secondary)',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-lg">group</span>
+                    <span>Master List</span>
+                  </div>
+                </button>
+              </li>
+
+              {/* Folders */}
+              {folders.map((folder) => (
+                <li key={folder.id} className="group relative">
+                  {editingFolderId === folder.id ? (
+                    <div className="flex items-center gap-2 px-2 py-1.5">
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameFolder(folder.id);
+                          if (e.key === 'Escape') {
+                            setEditingFolderId(null);
+                            setEditingName('');
+                          }
+                        }}
+                        autoFocus
+                        className="flex-1 px-2 py-1 rounded text-sm outline-none"
+                        style={{
+                          backgroundColor: 'var(--background)',
+                          border: '1px solid var(--border)',
+                          color: 'var(--text-primary)',
+                        }}
+                      />
+                      <button
+                        onClick={() => handleRenameFolder(folder.id)}
+                        disabled={isSubmitting}
+                        className="w-6 h-6 rounded flex items-center justify-center hover:opacity-70"
+                        style={{ backgroundColor: 'var(--success)', color: '#fff' }}
+                      >
+                        <Check size={12} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingFolderId(null);
+                          setEditingName('');
+                        }}
+                        className="w-6 h-6 rounded flex items-center justify-center hover:opacity-70"
+                        style={{ backgroundColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => onSelectFolder(folder.id)}
+                      className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors hover:opacity-80"
+                      style={{
+                        backgroundColor: selectedFolderId === folder.id ? 'rgba(0, 155, 240, 0.1)' : 'transparent',
+                        color: selectedFolderId === folder.id ? 'var(--primary)' : 'var(--text-secondary)',
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-lg">folder</span>
+                        <span>{folder.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {/* Placeholder for count */}
+                        </span>
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(menuOpenId === folder.id ? null : folder.id);
+                            }}
+                            className="w-6 h-6 rounded flex items-center justify-center hover:opacity-70 opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ color: 'var(--text-muted)' }}
+                          >
+                            <MoreHorizontal size={14} />
+                          </button>
+
+                          {menuOpenId === folder.id && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-10"
+                                onClick={() => setMenuOpenId(null)}
+                              />
+                              <div
+                                className="absolute right-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 min-w-[120px]"
+                                style={{
+                                  backgroundColor: 'var(--surface)',
+                                  border: '1px solid var(--border)',
+                                }}
+                              >
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    startEditing(folder);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity"
+                                  style={{ color: 'var(--text-primary)' }}
+                                >
+                                  <Pencil size={14} />
+                                  Rename
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteFolder(folder.id);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:opacity-70 transition-opacity"
+                                  style={{ color: '#ef4444' }}
+                                >
+                                  <Trash2 size={14} />
+                                  Delete
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </nav>
+
+      {/* New List Button */}
+      <div className="p-4" style={{ borderTop: '1px solid var(--border)' }}>
         {isCreating ? (
           <div className="flex items-center gap-2">
             <input
@@ -388,7 +324,7 @@ export default function Sidebar({
                   setNewFolderName('');
                 }
               }}
-              placeholder="Folder name"
+              placeholder="List name"
               autoFocus
               className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
               style={{
@@ -401,7 +337,7 @@ export default function Sidebar({
               onClick={handleCreateFolder}
               disabled={isSubmitting || !newFolderName.trim()}
               className="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity disabled:opacity-50"
-              style={{ backgroundColor: 'var(--success)', color: '#000' }}
+              style={{ backgroundColor: 'var(--success)', color: '#fff' }}
             >
               <Check size={16} />
             </button>
@@ -419,17 +355,17 @@ export default function Sidebar({
         ) : (
           <button
             onClick={() => setIsCreating(true)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-opacity hover:opacity-80"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:opacity-80"
             style={{
-              backgroundColor: 'var(--border)',
-              color: 'var(--text-primary)',
+              backgroundColor: 'var(--background)',
+              color: 'var(--text-secondary)',
             }}
           >
             <Plus size={18} />
-            <span className="font-medium">New Folder</span>
+            New List
           </button>
         )}
       </div>
-    </div>
+    </aside>
   );
 }
